@@ -1,7 +1,10 @@
+// config NODE_ENV to "test" for testing  
+process.env.NODE_ENV = "test";
+const request = require("supertest");
+
 const db = require("../db");
 const User = require("../models/user");
 const Message = require("../models/message");
-
 
 describe("Test User class", function () {
   beforeEach(async function () {
