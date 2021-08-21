@@ -1,6 +1,9 @@
 /** User class for message.ly */
 
-
+const db = require('../db') 
+const ExpressError = require('../expressError')
+const bcrypt = require('bcrypt') 
+const { BCRYPT_WORK_FACTOR } = require('../config')
 
 /** User of the site. */
 
@@ -10,20 +13,54 @@ class User {
    *    {username, password, first_name, last_name, phone}
    */
 
-  static async register({username, password, first_name, last_name, phone}) { }
+  static async register({username, password, first_name, last_name, phone}) {
+    // hashedPw (bcrypt.hash) 
+    const hashedPw = await bcrypt.hash(password, BCRYPT_WORK_FACTOR)
+    // await db.query(SQL) 
+    const result = await db.query(`
+    INSERT INTO users (username, password, first_name, last_name, phone, join_at, last_login_at) 
+    VALUES ($1, $2, $3, $4, $5, current_timestamp, current_timestamp) 
+    RETURNING username, password, first_name, last_name, phone
+    `, [username, hashedPw, first_name, last_name, phone])
+    // return 
+    return result.rows[0]
+  }
 
   /** Authenticate: is this username/password valid? Returns boolean. */
 
-  static async authenticate(username, password) { }
+  static async authenticate(username, password) { 
+    // checking for username 
+     const results = await db.query(`
+     SELECT * FROM users 
+     WHERE username=$1`, [username])
+    // is user found?
+    let user = results.rows[0]
+    // return user & bcrypt.compare(current password and user password)
+    return user && bcrypt.compare(password, user.password)
+  }
 
   /** Update last_login_at for user */
 
-  static async updateLoginTimestamp(username) { }
+  static async updateLoginTimestamp(username) {
+    // update last_login_at for specific user
+    const results = await db.query(`
+    UPDATE users 
+    SET last_login_at=current_timestamp
+    WHERE username=$1 
+    RETURNING username, last_login_at
+    `, [username])
+    return results.rows[0]
+  }
 
   /** All: basic info on all users:
    * [{username, first_name, last_name, phone}, ...] */
 
-  static async all() { }
+  static async all() { 
+    const results = await db.query(`
+    SELECT username, first_name, last_name, phone FROM users `)
+    // return everything 
+    return results.rows
+  }
 
   /** Get: get user by username
    *
@@ -34,7 +71,11 @@ class User {
    *          join_at,
    *          last_login_at } */
 
-  static async get(username) { }
+  static async get(username) { 
+    const result = await db.query(`
+    SELECT username, first_name, last_name, phone, join_at, last_login_at FROM users WHERE username=$1`, [username])
+    return result.rows[0]
+  }
 
   /** Return messages from this user.
    *
@@ -44,7 +85,21 @@ class User {
    *   {username, first_name, last_name, phone}
    */
 
-  static async messagesFrom(username) { }
+  static async messagesFrom(username) { 
+    const result = await db.query(`
+    SELECT id, body, sent_at, read_at, username, first_name, last_name, phone 
+    FROM messages 
+    JOIN users ON to_username=username
+    WHERE from_username=$1`
+    , [username])
+    return result.rows.map(r => {
+      const { id, body, sent_at, read_at } = r 
+      const { username, first_name, last_name, phone } = r 
+      const message = { id, body, sent_at, read_at }
+      message.to_user = { username, first_name, last_name, phone }
+      return message 
+    })
+  }
 
   /** Return messages to this user.
    *
@@ -54,8 +109,21 @@ class User {
    *   {id, first_name, last_name, phone}
    */
 
-  static async messagesTo(username) { }
+  static async messagesTo(username) { 
+    const result = await db.query(`
+    SELECT id, body, sent_at, read_at, username, first_name, last_name, phone
+    FROM messages 
+    JOIN users ON from_username=username
+    WHERE to_username=$1`
+    , [username])
+    return result.rows.map(r => {
+      const { id, body, sent_at, read_at } = r 
+      const { username, first_name, last_name, phone } = r 
+      const message = { id, body, sent_at, read_at }
+      message.from_user = { username, first_name, last_name, phone }
+      return message 
+    })
+  }
 }
-
 
 module.exports = User;

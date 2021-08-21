@@ -3,7 +3,6 @@
 const db = require("../db");
 const ExpressError = require("../expressError");
 
-
 /** Message on the site. */
 
 class Message {
@@ -97,6 +96,5 @@ class Message {
     };
   }
 }
-
 
 module.exports = Message;
