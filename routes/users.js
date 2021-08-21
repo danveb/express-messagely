@@ -1,16 +1,40 @@
+const express = require('express') 
+const router = new express.Router() 
+const ExpressError = require('../expressError')
+const jwt = require('jsonwebtoken') 
+const User = require('../models/user')
+const { authenticateJWT, ensureLoggedIn, ensureCorrectUser } = require('../middleware/auth')
+
 /** GET / - get list of users.
  *
  * => {users: [{username, first_name, last_name, phone}, ...]}
  *
  **/
-
+// user needs to be authenticated (with login) 
+router.get('/', ensureLoggedIn, async (req, res, next) => {
+    try {
+        // all users with info 
+        let users = await User.all() 
+        return res.json({users}) 
+    } catch(err) {
+        return next(err) 
+    }
+})
 
 /** GET /:username - get detail of users.
  *
  * => {user: {username, first_name, last_name, phone, join_at, last_login_at}}
  *
  **/
-
+// make sure ensureCorrectUser
+router.get('/:username', ensureCorrectUser, async (req, res, next) => {
+    try {
+        let user = await User.get(req.params.username) 
+        return res.json({user})         
+    } catch(err) {
+        return next(err) 
+    }
+})
 
 /** GET /:username/to - get messages to user
  *
@@ -21,7 +45,15 @@
  *                 from_user: {username, first_name, last_name, phone}}, ...]}
  *
  **/
-
+// make sure ensureCorrectUser
+router.get('/:username/to', ensureCorrectUser, async (req, res, next) => {
+    try {
+        let messages = await User.messagesTo(req.params.username) 
+        return res.json({messages}) 
+    } catch(err) {
+        return next(err) 
+    }
+})
 
 /** GET /:username/from - get messages from user
  *
@@ -32,3 +64,14 @@
  *                 to_user: {username, first_name, last_name, phone}}, ...]}
  *
  **/
+// make sure ensureCorrectUser 
+router.get('/:username/from', ensureCorrectUser, async (req, res, next) => {
+    try {
+        let messages = await User.messagesFrom(req.params.username) 
+        return res.json({messages}) 
+    } catch(err) {
+        return next(err) 
+    }
+})
+
+module.exports = router 
