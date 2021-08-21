@@ -1,0 +1,93 @@
+$ npm init --y 
+$ npm install (all packages from package.json)  
+$ createdb messagely 
+$ psql < data.sql 
+$ nodemon server.js (tour the application at localhost:3000) 
+$ jest -i (works thru all tests) 
+
+INSOMNIA 
+1. POST (localhost:3000/auth/register) 
+    - REQUEST: 
+    {
+        "username": "peachan", 
+        "password": "iamdog123",
+        "first_name": "Peach", 
+        "last_name": "Bae", 
+        "phone": "213-505-3970", 
+        "join_at": "2021-08-21 18:00"
+    }
+    - RESPONSE: 
+    {
+    "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6Impvam8iLCJpYXQiOjE2Mjk1Mjk5MTN9.wpbgLCDaLYQyVSRATV43FGcxtdsQmPCCmFcqgrLMo-Y"
+    }
+
+2. POST (localhost:3000/auth/login) 
+    - REQUEST:
+    {
+        "username": "peachan",
+        "password": "iamdog123"
+    }
+    - RESPONSE: 
+    {
+    "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6InBlYWNoYW4iLCJpYXQiOjE2Mjk1Mjk4MzN9.3kVIcyZHwnQV4AmCuBnHz_k7HdAt_9-OmOMEe3Bi3_w"
+    }
+
+3. GET (localhost:3000/users) 
+    - REQUEST 
+    {
+    "_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6InBlYWNoYW4iLCJpYXQiOjE2Mjk1MzAyMTZ9.WAHG2gWakf9NK_gkIqcekDJfjuiC2Bxhvyj9mTdNFgE"
+    }
+    - RESPONSE 
+    {
+    "users": [
+        {
+        "username": "jojo",
+        "first_name": "Jojo",
+        "last_name": "Bae",
+        "phone": "213-505-3970"
+        },
+        {
+        "username": "peachan",
+        "first_name": "Peach",
+        "last_name": "Bae",
+        "phone": "213-505-3970"
+        }
+    ]
+    }
+
+4. GET (localhost:3000/users/:username) 
+    - REQUEST 
+    {
+    "_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6InBlYWNoYW4iLCJpYXQiOjE2Mjk1MzAyMTZ9.WAHG2gWakf9NK_gkIqcekDJfjuiC2Bxhvyj9mTdNFgE"
+    }
+    - RESPONSE 
+    {
+    "user": {
+        "username": "peachan",
+        "first_name": "Peach",
+        "last_name": "Bae",
+        "phone": "213-505-3970",
+        "join_at": "2021-08-21T07:09:12.967Z",
+        "last_login_at": "2021-08-21T07:16:56.249Z"
+    }
+    }
+
+5. POST (localhost:3000/message)
+    - REQUEST 
+    {
+    "from_username": "peachan",
+    "to_username": "jojo",
+    "body": "Hi my name is Peach and I am sending a msg",
+    "_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6InBlYWNoYW4iLCJpYXQiOjE2Mjk1MzAyMTZ9.WAHG2gWakf9NK_gkIqcekDJfjuiC2Bxhvyj9mTdNFgE"
+    }
+
+    - RESPONSE 
+    {
+    "message": {
+        "id": 3,
+        "from_username": "peachan",
+        "to_username": "jojo",
+        "body": "Hi my name is Peach and I am sending a msg",
+        "sent_at": "2021-08-21T17:15:12.595Z"
+    }
+    }
